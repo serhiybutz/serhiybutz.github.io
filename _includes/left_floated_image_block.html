@@ -1,0 +1,9 @@
+<div class="floated-image-block">
+    <div class="float-left">
+        <img src="{{ include.image_path }}"{% if include.width %} width="{{ include.width }}"{% endif %}{% if include.height %} height="{{ include.height }}"{% endif %} alt="">
+    </div>
+    <div>
+        {% if include.title %}<h2>{{ include.title }}</h2>{% endif %}
+        {{ include.description | markdownify }}
+    </div>
+</div>

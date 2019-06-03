@@ -1,0 +1,9 @@
+<div class="floated-image-block">
+    <div class="float-left">
+        {% avatar user=include.username size={{ include.size }} %}
+    </div>
+    <div>
+        {% if include.title %}<h2>{{ include.title }}</h2>{% endif %}
+        {{ include.description | markdownify }}
+    </div>
+</div>

@@ -1,0 +1,20 @@
+.float-left {
+    float: left;
+    margin-right: 1em;
+}
+
+.floated-image-block {
+    // overflow: hidden;
+    @extend %clearfix;
+    margin-bottom: 1em;
+}
+
+.fixme {
+    color: red;
+}
+
+.center-image
+{
+    margin: 0 auto;
+    display: block;
+}
