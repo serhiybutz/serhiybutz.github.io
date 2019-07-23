@@ -8,7 +8,7 @@ name: "Serge Bouts: Personal Website"
 # avatar: https://avatars3.githubusercontent.com/u/44224422
 email: sergebouts@gmail.com
 briefDescription: "Creative iOS App Developer"
-description: "Serge Bouts: Software developer. iOS app development. Software architecture"
+description: "Personal blog of Serge Bouts"
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 # twitter_username: sergebouts
