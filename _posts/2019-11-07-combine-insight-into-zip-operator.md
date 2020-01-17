@@ -12,6 +12,7 @@ categories: [ios, macos, swift, combine, reactive programming, zip]
 - [Intro](#intro)
 - [So what’s the problem?](#so-whats-the-problem)
 - [The scan-based solution](#the-scan-based-solution)
+- [The alternatively behaved zip solution](#the-alternatively-behaved-zip-solution)
 - [Wrap up](#wrap-up)
 
 ## Intro
@@ -88,9 +89,19 @@ The scan-based code for event enumeration is provided below.
 
 In the code above, we are using a stateful *scan* operator to keep track of the latest issued serial number in the accumulator and deliver it in pairs (as tuples) with its corresponding input value to the downstream subscriber.
 
+## The alternatively behaved zip solution
+
+I believe the intuitive behavior for the *zip* operator would be the following: whatever demand *zip* receives from its downstream (except for 0, in which case it should also send 0 upstream), it should always send a demand for only one value to its upstreams, then wait for the response from each of them, then emit the result downstream, closing the round. And repeat the rounds until the demand gets exhausted.
+
+I have developed an alternative to Combine's original *zip* operator, which behaves in the manner described above and is applicable for enumerating any values, no matter whether the source publisher is finite or infinite. This solution allows seamless combining both worlds ― *dynamic* and *static* publisher, when the *zip* operator is concerned. However, a detailed discussion of it is out of scope of this blog post. It is available in the [xCombine repository][xcombine_repository] where you can check its source code out. The example demonstrating it is shown below.
+
+![](../images/2019-11-07-combine-insight-into-zip-operator/08.jpg){: height="100%" width="100%" .center-image }
+
+Notice how in the example we are opting for xCombine's version of the *zip* operator by prepending it with the `x` property *(line 9)*.
+
 ## Wrap up
 
-In this blog post, we've looked into the odd behavior of Combine's *zip* operator in one of the common real-world usage scenarios and explored a solution.
+In this blog post, we've looked into the odd behavior of Combine's *zip* operator in one of the common real-world usage scenarios and explored a couple of solutions.
 
 Thanks for reading 🎈
 
