@@ -33,6 +33,7 @@ In general, the `shareReplay` operator returns a [*hot*][hot_vs_cold] publisher 
 Combine, however, unlike RxSwift, doesn't offer the `shareReplay` operator yet. But the good news is that Combine has an open design and one way to go is to make up a custom `shareReplay` operator on top of it. One simplistic, but still working implementation of the `shareReplay` operator is provided below *(you can use playgrounds in Xcode to execute the snippets from this post.)*
 
 ![](../images/2020-02-19-combine-sharereplay-operator/01.png){: height="100%" width="100%" .center-image }
+<p align="center"><a href="https://gist.github.com/SergeBouts/069ded285a2c4b6384d14b5e0049c216" target="_blank">Click for Gist</a></p>
 
 Let's examine it:
 
@@ -44,6 +45,7 @@ Let's examine it:
 Now, the following code illustrates how we can leverage the `shareReplay` operator in temperature measurements diagramming.
 
 ![](../images/2020-02-19-combine-sharereplay-operator/02.png){: height="100%" width="100%" .center-image }
+<p align="center"><a href="https://gist.github.com/SergeBouts/fe3777a3b9a2b2af387fb32bec08b283" target="_blank">Click for Gist</a></p>
 
 Let's break the above code down:
 
