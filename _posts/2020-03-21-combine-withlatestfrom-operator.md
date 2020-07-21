@@ -34,6 +34,7 @@ We're going to use [`UISearchBar`][uisearchbar] as a filtering control; let's st
 `UISearchBar` provides a text field for entering text that is vended in the property `searchTextField` of type [`UISearchTextField`][uisearchtextfield]. The `UISearchTextField` subclasses [`UITextField`][uitextfield] which is a good candidate for attaching a publisher of text changes. We can integrate `UISearchBar` with Combine as shown below.
 
 ![](../images/2020-03-21-combine-withlatestfrom-operator/01.png){: height="100%" width="100%" .center-image }
+<p align="center"><a href="https://gist.github.com/SergeBouts/11efb99227bb166e755e3e3c7d02f404" target="_blank">Click for Gist</a></p>
 
 In the above code, we're extending `UITextField` type to retroactively add a publisher of text changes, the property `textPublisher` of erased type `AnyPublisher<String?, Never>`. It's backed by the `NotificationCenter` publisher, on the default center, which is set up to emit the `.textDidChangeNotification` notifications produced by the underlying text field instance (*lines 7-9*). Next in the pipeline, we're picking `Notification`'s  `object` field (*line 10*), downcasting it back to `UITextField` (*line 11*), picking its `text` field (*line 12*), and erasing the publisher type (*line 13*).
 
@@ -42,6 +43,7 @@ In the above code, we're extending `UITextField` type to retroactively add a pub
 Now that `UITextField` text publisher has been set up, we can go ahead and establish the search requests processing pipelines, as shown below.
 
 ![](../images/2020-03-21-combine-withlatestfrom-operator/02.png){: height="100%" width="100%" .center-image }
+<p align="center"><a href="https://gist.github.com/SergeBouts/245449fdc8386a483c1575718829855e" target="_blank">Click for Gist</a></p>
 
 We start by defining the `searchStream` pipeline (*line 53-55*). To refer to the search bar's text publisher we're writing `searchBar.searchTextField.textPublisher` and then setting up prepending the produced stream with the current value from `searchBar.text!` (*line 54*) to get the search results generated initially. Thus, the user's every single tap on the keyboard will trigger search results generation. But can you see any potential pitfalls here? The problem is that if the user is tapping fast enough and the search runs for every single tap, it can lead to a system overload. To avoid it, we limit the frequency of search requests by extending the previous pipeline with the [`debounce`][debounce] operator which will only emit the freshest received value upon an "undisturbed" delay of 0.3s (*line 58*).
 
@@ -54,6 +56,7 @@ To make things even more interesting we'll want to display the search results in
 First, as with `UISearchBar` we'll have to integrate `UIRefreshControl` with Combine as shown below.
 
 ![](../images/2020-03-21-combine-withlatestfrom-operator/03.png){: height="100%" width="100%" .center-image }
+<p align="center"><a href="https://gist.github.com/SergeBouts/782b6d3b6a92b1848b3d90d0f1faf0a2" target="_blank">Click for Gist</a></p>
 
 In the code above, we continue to use Swift extensions to retroactively add a publisher of the refresh beginning events to `UIRefreshControl`. However, in contrast to `UISearchBar`, this time we're unable to take advantage of `NotificationCenter` publisher because there are no notifications sent for `UIRefreshControl`'s refresh beginning events. And so we're setting up our own events publishing, backed by a `PassthroughSubject` publisher (*line 7*).
 
@@ -72,6 +75,7 @@ If we consider data streams from the perspective of their nature, in essence, th
 So go ahead and introduce our own implementation of the `withLatestFrom` operator, as shown below.
 
 ![](../images/2020-03-21-combine-withlatestfrom-operator/04.png){: height="100%" width="100%" .center-image }
+<p align="center"><a href="https://gist.github.com/SergeBouts/59d1c674c53f8a23d2ac773490410940" target="_blank">Click for Gist</a></p>
 
 The above is the code of a fully-fledged operator. The `withLatestFrom` operator returns a "[cold][cold_observables]" publisher, meaning it creates a new identity for each new downstream subscriber. Let's step through the above code:
 
@@ -97,6 +101,7 @@ Overall, our `withLatestFrom` operator is fully functional, especially for our p
 Time to update our pipelines. In the following code, we've incorporated the `withLatestFrom` operator-based logic for a search results regeneration upon refresh control events.
 
 ![](../images/2020-03-21-combine-withlatestfrom-operator/05.png){: height="100%" width="100%" .center-image }
+<p align="center"><a href="https://gist.github.com/SergeBouts/1bf5f9a24675a09e012ce3f0c22018cc" target="_blank">Click for Gist</a></p>
 
 Let's step through what's changed:
 
