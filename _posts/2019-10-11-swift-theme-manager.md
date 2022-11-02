@@ -63,7 +63,7 @@ We are going to encapsulate a set of available theme attributes in the *theme mo
 
 Let's start off by defining our example theme model, as shown below.
 ![](../images/2019-10-11-swift-theme-manager/01.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/0947bcdffa8da0079f2cd940289f21e2" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/0947bcdffa8da0079f2cd940289f21e2" target="_blank">Click for Gist</a></p>
 
 We have used a value type, `struct`, to represent the theme model. Its properties will serve as the theme attributes. Our example theme model has got 3 of them:
 * `appBgColor` for the app background color
@@ -75,13 +75,13 @@ See how the theme attributes are different from concrete UI element attributes �
 For the next step we are going to define our example themes. It's convenient in *Swift* to retroactively encapsulate them as static properties right in the `MyThemeSettings` struct, with an extension.
 
 ![](../images/2019-10-11-swift-theme-manager/02.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/c3d38ad0fdf015036177c45dddeef949" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/c3d38ad0fdf015036177c45dddeef949" target="_blank">Click for Gist</a></p>
 
 Here we have got the instances `lightTheme` and  `darkTheme` for the light and dark themes, respectively.
 
 For the means of referencing our themes from across the app, it is handy to make use of an enum, as shown in the example below.
 ![](../images/2019-10-11-swift-theme-manager/03.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/e060258be74e74608699a23e24962413" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/e060258be74e74608699a23e24962413" target="_blank">Click for Gist</a></p>
 
 The above enum has got two cases `light` and `dark` for our light and dark themes, which behave much like “tags”, each representing its related theme instance; the enum's computed property `settings` is responsible for the mapping.
 
@@ -118,7 +118,7 @@ A tricky aspect about *Observer* pattern when dealing with it from [ARC][arc]-ba
 Let's start with creating a `Themable` protocol, that declares an API for the themable objects (i.e., the observers), which is going to be the type of `NSHashTable`'s stored elements, as shown below.
 
 ![](../images/2019-10-11-swift-theme-manager/04.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/e2ac4e360c408f92b6d6d04610bd3559" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/e2ac4e360c408f92b6d6d04610bd3559" target="_blank">Click for Gist</a></p>
 
 The only requirement of the `Themable` protocol is the `applyTheme(_:)` method, which is to be implemented by the observers, the themable objects. It will be called by the theme manager on every registered observer whenever the current theme toggles. `applyTheme(_:)` is the very method from which the themable objects will update their appearance and we are going to call it a *theme handler*.
 
@@ -126,7 +126,7 @@ Notice the `@objc` attribute in front of the protocol definition. It is to tell 
 
 Now, let's define a class for the theme manager, called `ThemeManager`, as shown below.
 ![](../images/2019-10-11-swift-theme-manager/05.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/7ab4e40aa17dbf264e2102a7aeca73cf" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/7ab4e40aa17dbf264e2102a7aeca73cf" target="_blank">Click for Gist</a></p>
 
 In our above theme manager, the current theme is held in the `theme` property *(line 7)*. Whenever we need to switch the current theme, we would just set this property to another theme enum case and the `didSet` property observer will respond by triggering the `apply()` method for theme change notifying, which will iterate through all stored observers calling their method `applyTheme()` *(lines 33-35)*.
 
@@ -143,14 +143,14 @@ Also, notice that the observer-notifying method `applyTheme()` is initially exec
 Now we need a bit updated version of the originally introduced example of the enum `MyTheme`, as shown below.
 
 ![](../images/2019-10-11-swift-theme-manager/06.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/31ed757f32fc419042dbb21db46e41da" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/31ed757f32fc419042dbb21db46e41da" target="_blank">Click for Gist</a></p>
 
 In the above code, in contrast to the original enum, we have declared it with a raw type of `Int` and prefixed it with the [`@objc`][objc_enum] attribute *(line 1)*, or otherwise, the compiler would yell: *"Method cannot be a member of an @objc protocol because the type of the parameter cannot be represented in Objective-C"*.
 
 That's it, our theme manager is completed. At this point, the themable objects can apply theming, as in the example shown below.
 
 ![](../images/2019-10-11-swift-theme-manager/07.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/188906a6a54570a5ce6ec602dbdd9a42" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/188906a6a54570a5ce6ec602dbdd9a42" target="_blank">Click for Gist</a></p>
 
 For the purpose of illustrating the use of our theme manager, we have customized by subclassing a view controller naming it `DemoViewController` *(line 28)*. It simply displays an instance of an also customized by subclassing text label, `HighlightedLabel` *(line 4)*. 
 
@@ -175,7 +175,7 @@ Although *Target-Action* originates from *Objective-C*, there also happens to ex
 
 While our original theme manager stored the references to the themable objects, now it will need to store the *target-action* pairs, which will represent the theme handlers from now on. As per [*Swift-y Target-Action*][swift_instance_methods_are_curried_functions] pattern, we need to declare the `TargetAction` protocol and define the `AnyTargetActionWrapper` struct adopting it, as shown below.
 ![](../images/2019-10-11-swift-theme-manager/08.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/49f7fefa4d7dc42d63b1e72b4a39d886" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/49f7fefa4d7dc42d63b1e72b4a39d886" target="_blank">Click for Gist</a></p>
 
 Basically, the `AnyTargetActionWrapper` struct is a container for a *target-action* pair. Let's break it down:
 
@@ -189,7 +189,7 @@ So far, so good, but now comes the question: where should we store theme handler
 
 For our task, *Associated Objects* will come to the rescue. This facility is based on the *Objective-C* runtime function `objc_setAssociatedObject()` which allows making associations between one object and others, distinguished by unique associated keys. Its counterpart function, `objc_getAssociatedObject()`, is to retrieve a previously established association by the associated key. And this is how we are going to tie theme handler storages' lifetimes with their related targets. Let's write a class for our theme handler storage, called `TargetActionStorage`, encapsulating the said mechanism as well as taking over the notifying of the stored theme handlers, as shown below.
 ![](../images/2019-10-11-swift-theme-manager/09.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/8c1a180392b6ccbd7f47d452cdd2f641" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/8c1a180392b6ccbd7f47d452cdd2f641" target="_blank">Click for Gist</a></p>
 
 In the first place, the above class has two static methods for instantiating and retrieving targets' associated storages for theme handlers, `setup(for:)` and `get(for:)`, which both take a targeted object as an argument. In essence, these methods are wrappers over `objc_setAssociatedObject()` and `objc_getAssociatedObject()`, respectively. For the associated key we are using a reference to a unique string value in the mutable global variable `associatedKey` *(line 3)*.
 
@@ -200,7 +200,7 @@ Next comes *Observer Pattern*'s part *(lines 6, 24-38)*, which comprises the fol
 
 Now let's go ahead and finally update our theme manager, as shown below.
 ![](../images/2019-10-11-swift-theme-manager/10.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/3bca5b9b1679b2db9af0d52628e3e4d9" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/3bca5b9b1679b2db9af0d52628e3e4d9" target="_blank">Click for Gist</a></p>
 
 In the above theme manager, in contrast to the original version, except for changing the storage property name to `targetActionStorages` and its element type to `TargetActionStorage` *(line 4)*, there has significantly changed the lower part *(lines 27-46)*.
 
@@ -213,7 +213,7 @@ BTW, here we have used the original `MyThemeModel` and `MyTheme`, introduced in 
 Now that the new theme manager has been designed, let's see how it can be integrated with themable objects in practice to illustrate the advantages of this approach.
 
 ![](../images/2019-10-11-swift-theme-manager/11.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/a349b77e3662dac2787860b319a8d6ea" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/a349b77e3662dac2787860b319a8d6ea" target="_blank">Click for Gist</a></p>
 
 In the code above, first off, we don't need anymore any `Themable` protocol adherence for our UI elements to be themable objects.
 
@@ -234,7 +234,7 @@ Basically, the code is not going to change dramatically from the preceding one, 
 First and foremost, in our preceding theme manager, wherever we referenced the client app's `MyThemeSettings` struct and `MyTheme` enum, we will need to transition to referencing the protocols `ThemeModelProtocol` and `ThemeProtocol` instead, which are presented below.
 
 ![](../images/2019-10-11-swift-theme-manager/12.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/35f4d0f3429e6cb3359b60f81e37c733" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/35f4d0f3429e6cb3359b60f81e37c733" target="_blank">Click for Gist</a></p>
 
 Besides, the above two protocols are to be adopted by the client app's theme model struct and theme enum, respectively. With such a design, we will decouple our theme manager code from the client app, and both of them will depend on the same abstractions ― protocols.
 
@@ -245,21 +245,21 @@ The `ThemeProtocol`'s conformance to `Equatable` makes the theme enum cases comp
 As already mentioned, the types `MyThemeSettings` and `MyTheme`, which are on the client app's side, should conform to the just-introduced protocols, as in the example below.
 
 ![](../images/2019-10-11-swift-theme-manager/13.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/68a50db55be7ef752719acd95cd5c952" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/68a50db55be7ef752719acd95cd5c952" target="_blank">Click for Gist</a></p>
 
 In the above code, for the `MyTheme` enum, the compiler is capable of inferring `ThemeProtocol`'s associated type `Model` eliminating the need for the use of `typealias`.
 
 Next up, let's adapt the preceding theme manager's `TargetAction` protocol and `AnyTargetActionWrapper` struct to fit in with our above protocols, as shown below.
 
 ![](../images/2019-10-11-swift-theme-manager/14.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/e613405302c1b5ac35d9e7fbfbb0df31" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/e613405302c1b5ac35d9e7fbfbb0df31" target="_blank">Click for Gist</a></p>
 
 In the above code, the `TargetAction` protocol has become abstract because of introducing the associated type `Theme` to represent the client app's actual theme enum. The `AnyTargetActionWrapper` struct has become generic, parameterized by the type parameter `Theme`, which is for the same reason.
 
 Next up, let's update the `TargetActionStorage` class, as shown below.
 
 ![](../images/2019-10-11-swift-theme-manager/15.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/eb7519158a4f8a26335307817ae302f2" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/eb7519158a4f8a26335307817ae302f2" target="_blank">Click for Gist</a></p>
 
 In the above code, the same type parameter `Theme` (to represent the client app's actual theme enum type) has been introduced too, which is passed through to the `targetAction` property definition to specialize the target-action storage elements' generic type (*line 6*). Also, `Theme` has replaced the previously used concrete theme enum type in the type annotation of:
 
@@ -269,7 +269,7 @@ In the above code, the same type parameter `Theme` (to represent the client app'
 Finally, let's update our theme manager generifying it with the same type parameter `Theme` and renaming it to `Themer`, as shown below.
 
 ![](../images/2019-10-11-swift-theme-manager/16.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/7232f5aa3677f4e49da0dcbbdfbd0934" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/7232f5aa3677f4e49da0dcbbdfbd0934" target="_blank">Click for Gist</a></p>
 
 In the above code, the type parameter `Theme` has been passed through to the `targetActionStorages` property definition to specialize its stored element's generic type (via the use of the `TargetActionStorageType` typealias) (*line 6*), as well as it has replaced the previously used concrete theme enum type in the type annotation of:
 
@@ -280,7 +280,7 @@ In the above code, the type parameter `Theme` has been passed through to the `ta
 The other important change is that we have got rid of the singleton code from the theme manager class because it does not agree well with the theme manager reusability. Instead, we will have to place it somewhere in the client app, as shown in the code below.
 
 ![](../images/2019-10-11-swift-theme-manager/17.jpg){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/956c8362d4688160054174d02fe9a1ec" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/956c8362d4688160054174d02fe9a1ec" target="_blank">Click for Gist</a></p>
 
 In fact, the last code snippet represents the “integration point” between the client app and our shared theme manager.
 
@@ -321,7 +321,7 @@ Thanks for reading! 🙂
 [weakObjects]: https://developer.apple.com/documentation/foundation/nshashtable/1412241-weakobjects "weakObjects()"
 [compatible_with_objc]: https://docs.swift.org/swift-book/LanguageGuide/Protocols.html#ID284
 [objc_enum]: https://developer.apple.com/swift/blog/?id=22
-[demo_example_observer]: https://github.com/SergeBouts/blog-samples/tree/master/ThemeManagerDemo-Observer "Theme Manager, Observer approach demo"
+[demo_example_observer]: https://github.com/serhiybutz/blog-samples/tree/master/ThemeManagerDemo-Observer "Theme Manager, Observer approach demo"
 [dry]: https://en.wikipedia.org/wiki/Don%27t_repeat_yourself "Don't Repeat Yourself Principle"
 [closures]: https://docs.swift.org/swift-book/LanguageGuide/Closures.html "Closures"
 [target_action]: https://developer.apple.com/library/archive/documentation/General/Conceptual/Devpedia-CocoaApp/TargetAction.html "Target-Action Pattern"
@@ -331,9 +331,9 @@ Thanks for reading! 🙂
 [type_erasure]: https://medium.com/@bobgodwinx/swift-associated-type-design-patterns-6c56c5b0a73a
 [retroactive_modeling]: https://www.e-gineering.com/2019/07/31/swift-essentials-protocols/#:~:text=Protocol%20Extensions
 [decl_protocol_adoption_with_extension]: https://docs.swift.org/swift-book/LanguageGuide/Protocols.html#ID278
-[demo_example_swifty_target_action]: https://github.com/SergeBouts/blog-samples/tree/master/ThemeManagerDemo-SwiftyTargetAction "Theme Manager, Swifty Target-Action approach demo"
+[demo_example_swifty_target_action]: https://github.com/serhiybutz/blog-samples/tree/master/ThemeManagerDemo-SwiftyTargetAction "Theme Manager, Swifty Target-Action approach demo"
 [shared_component]: https://itnext.io/how-to-easily-reuse-components-across-projects-and-repositories-fa73f8ba2a83 "How to Easily Reuse Components Across Projects and Repositories"
 [abstract_protocols]: http://www.russbishop.net/swift-associated-types
-[themer]: https://github.com/SergeBouts/Themer "Themer"
-[demo_example_reusable]: https://github.com/SergeBouts/blog-samples/tree/master/ThemeManagerDemo-Reusable "Theme Manager, Reusable Swifty Target-Action approach demo"
+[themer]: https://github.com/serhiybutz/Themer "Themer"
+[demo_example_reusable]: https://github.com/serhiybutz/blog-samples/tree/master/ThemeManagerDemo-Reusable "Theme Manager, Reusable Swifty Target-Action approach demo"
 [modular_programming]: https://en.wikipedia.org/wiki/Modular_programming

@@ -3,16 +3,16 @@
 # you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
-title: "Serge Bouts"
-name: "Serge Bouts: Personal Website"
+title: "Serhiy Butz"
+name: "Serhiy Butz: Personal Website"
 # avatar: https://avatars3.githubusercontent.com/u/44224422
-email: sergebouts@gmail.com
+email: serhiybutz@gmail.com
 briefDescription: "Creative iOS App Developer"
-description: "Personal blog of Serge Bouts"
+description: "Personal blog of Serhiy Butz"
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
-# twitter_username: sergebouts
-github_username:  sergebouts
+# twitter_username: serhiybutz
+github_username: serhiybutz
 
 encoding: utf-8
 
@@ -34,7 +34,7 @@ plugins:
 # Your website URL (e.g. http://barryclark.github.io or http://www.barryclark.co)
 # Used for Sitemap.xml and your RSS feed
 
-url: http://sergebouts.github.io
+url: http://serhiybutz.github.io
 
 # If you're hosting your site at a Project repository on GitHub pages
 # (http://yourusername.github.io/repository-name)

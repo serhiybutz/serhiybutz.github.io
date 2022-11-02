@@ -79,7 +79,7 @@ Analyzing how mutexes behave under different circumstances and what overheads ar
 
 ## Benchmark
 
-In this [benchmark](https://github.com/SergeBouts/MutexBenchmark/blob/master/MutexBenchmark/main.swift), I compare the performance of mutexes in the absence of *contention* with a single thread is running. To get the cleanest possible results, the benchmark was performed from a command line tool application with the *Release* build configuration (for maximum optimization) and with the *Exclusive Access to Memory* runtime check disabled.
+In this [benchmark](https://github.com/serhiybutz/MutexBenchmark/blob/master/MutexBenchmark/main.swift), I compare the performance of mutexes in the absence of *contention* with a single thread is running. To get the cleanest possible results, the benchmark was performed from a command line tool application with the *Release* build configuration (for maximum optimization) and with the *Exclusive Access to Memory* runtime check disabled.
 
 The following chart shows the benchmark results I got on a 3.1GHz Dual-Core Intel Core i7 with 16GM of RAM running macOS Catalina v10.15.3, deployment target 10.15. Time is given in **nano**seconds. 
 
@@ -97,8 +97,8 @@ I have noticed that some items, such as the top two, sometimes tend to change th
 
 To summarize, I find that the top three items can be thought of as equivalent in performance and overall the performance of all mutexes in the absence of contention is quite high.
 
-I also benchmarked pairs of *contended* calls to the mutexes, and the overhead turned out to be 2 orders of magnitude higher! And for a relatively small number of measurements, it even jumped up to 3 orders of magnitude! Since the arrangement of items in the benchmark varied quite chaotically from time to time, I decided not to present a diagram for them. If you are curious, you can download my [benchmark project](https://github.com/SergeBouts/MutexBenchmark) and play with it yourself. Still, some items behaved steadily as opposed to the others, like the `BiSemaphore` and `OSUnfairLock`: the measurements (the total time of the *lock* operation immediately followed by the *unlock* operation) for them mostly varied in the range of *8-10 **micro**seconds*. Such a drastic degradation in performance is caused by the need for a thread to enter the kernel, go to the sleeping state and the subsequent awakening.
+I also benchmarked pairs of *contended* calls to the mutexes, and the overhead turned out to be 2 orders of magnitude higher! And for a relatively small number of measurements, it even jumped up to 3 orders of magnitude! Since the arrangement of items in the benchmark varied quite chaotically from time to time, I decided not to present a diagram for them. If you are curious, you can download my [benchmark project](https://github.com/serhiybutz/MutexBenchmark) and play with it yourself. Still, some items behaved steadily as opposed to the others, like the `BiSemaphore` and `OSUnfairLock`: the measurements (the total time of the *lock* operation immediately followed by the *unlock* operation) for them mostly varied in the range of *8-10 **micro**seconds*. Such a drastic degradation in performance is caused by the need for a thread to enter the kernel, go to the sleeping state and the subsequent awakening.
 
-You can find the benchmark Xcode project in this [repository](https://github.com/SergeBouts/MutexBenchmark).
+You can find the benchmark Xcode project in this [repository](https://github.com/serhiybutz/MutexBenchmark).
 
 Thanks for reading 🎈

@@ -9,6 +9,6 @@ permalink: /about/
   size=100
   description="I have passion for software development and love to create for iOS. This is my personal technical blog.
 
-To see some of my code visit my GitHub profile [here](https://github.com/SergeBouts)."
+To see some of my code visit my GitHub profile [here](https://github.com/serhiybutz)."
 %}
 

@@ -15,7 +15,7 @@ In *Swift*, a commonly recommended way to achieve *exclusive mutual memory acces
 Apple's documentation [states](https://developer.apple.com/library/archive/documentation/General/Conceptual/ConcurrencyProgrammingGuide/ThreadMigration/ThreadMigration.html#//apple_ref/doc/uid/TP40008091-CH105-SW3):
 > Replacing your lock-based code with queues **eliminates many of the penalties associated with locks** and also simplifies your remaining code. Instead of using a lock to protect a shared resource, you can instead create a queue to serialize the tasks that access that resource. **Queues do not impose the same penalties as locks.** For example, queueing a task does not require trapping into the kernel to acquire a mutex.
 
-However, when I benchmarked submitting a task closure to a queue on my macbook (3.1GHz Intel Core i7) I got an overhead of 200*ns* for a non-capturing task closure and 500*ns* for a capturing closure. Since today's *lock* implementations don't trap into the kernel for uncontended calls, the overhead of an uncontended lock operation is an order of magnitude lower, e.g., [`NSLock`'s `lock`/`unlock` takes approx. 40ns](https://sergebouts.github.io/swift-mutex-benchmark/). In most cases, the use of *Dispatch queues* is justified, but there're still situations where we want to achieve the best possible performance, and then we have to seek different opportunities with lower-level synchronization primitives, such as `NSLock` or `os_unfair_lock`.
+However, when I benchmarked submitting a task closure to a queue on my macbook (3.1GHz Intel Core i7) I got an overhead of 200*ns* for a non-capturing task closure and 500*ns* for a capturing closure. Since today's *lock* implementations don't trap into the kernel for uncontended calls, the overhead of an uncontended lock operation is an order of magnitude lower, e.g., [`NSLock`'s `lock`/`unlock` takes approx. 40ns](https://serhiybutz.github.io/swift-mutex-benchmark/). In most cases, the use of *Dispatch queues* is justified, but there're still situations where we want to achieve the best possible performance, and then we have to seek different opportunities with lower-level synchronization primitives, such as `NSLock` or `os_unfair_lock`.
 
 In this post, we will review the traditional state synchronization strategy with *lock* (aka *mutex*) and work out a more promising one. We will develop a concurrent construct for more organic synchronization of shared memory accesses. It will be interesting first of all for those who seek to write efficient parallel programs in *Swift*.
 
@@ -59,7 +59,7 @@ As a simple example, consider the following traffic accounting class that keeps 
 
 <img src="../images/2020-05-27-swift-mutex-to-operation-strategy/TrafficAccountClass-original.png" width="100%" height="100%" alt="TrafficAccountClass">
 
-<p align="center"><a href="https://gist.github.com/SergeBouts/bffaa0746286020e1191062abd32f869" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/bffaa0746286020e1191062abd32f869" target="_blank">Click for Gist</a></p>
 
 Its *API* is divided into 2 parts depending on the type of interaction with the state: [*queries* and *commands*](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation). The *queries* use *read-only* access, and in the above example these are the simple `currentBalance` and `currentTraffic` computed properties, each with *read-only* access to one *property*, and the composite property `summary`, which has *read-only* access to both of these *properties*. The latter is useful for combined reporting. The *commands* (which are also [*transactions*](https://en.wikipedia.org/wiki/Transaction_processing)) use *read-write* access, and in the above example these are the `topUp(for:)` and `consume(:at:)` methods for funding the account and deducting funds for consumed traffic, respectively. The latter, in addition to performing a side effect, also returns the actual amount of consumed traffic from the requested traffic.
 
@@ -101,7 +101,7 @@ First, we need to somehow represent the *property* of the program so that we can
 Another detail about shared *program properties* is that *Shared Manager* needs to distinguish them from each other without any introspection, i.e., they must have the quality of *identity*. Reference semantics of the `class` type will ensure this.
 
 ![](../images/2020-05-27-swift-mutex-to-operation-strategy/code01.png){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/3fef97a3a444571cc91bcbb36ffd6a79" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/3fef97a3a444571cc91bcbb36ffd6a79" target="_blank">Click for Gist</a></p>
 
 To provide access to *program properties*, we will have a special accessor to be supplied by *Shared Manager* for each given *property* in the *access blocks* ([see below](#access_block)). In fact, it is a wrapper for the *program property* whose *API* is comprised of a single `value` property, which provides access to the *property* itself.
 
@@ -109,7 +109,7 @@ We will use the `struct` type for accessors because of its value semantics, whic
 
 ![](../images/2020-05-27-swift-mutex-to-operation-strategy/code02.png){: height="100%" width="100%" }
 
-<p align="center"><a href="https://gist.github.com/SergeBouts/0aa9a95f3911ef3aa0022ad671f5914a" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/0aa9a95f3911ef3aa0022ad671f5914a" target="_blank">Click for Gist</a></p>
 
 As the *API* for *Shared Manager*, we'll have the concise [higher-order](https://en.wikipedia.org/wiki/Higher-order_function#Swift) functions `borrow()` (see the below code) whose arguments will be the desired *program properties* followed by a trailing closure of an <span id="access_block">*access block*</span>. *Access block* will be called  by the *borrow()* function either immediately if the *properties* are not in use, or, otherwise, right after they become available. The *access block* receives the accessors of the desired properties as arguments, which is the only way to access the values of the *properties*.
 
@@ -117,7 +117,7 @@ To be able to use an arbitrary number of desired *properties*, we will have the 
 
 ![](../images/2020-05-27-swift-mutex-to-operation-strategy/code03.png){: height="100%" width="100%" }
 
-<p align="center"><a href="https://gist.github.com/SergeBouts/ef9954be6571a9cdeec269a1004188a4" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/ef9954be6571a9cdeec269a1004188a4" target="_blank">Click for Gist</a></p>
 
 Now that we're done with the *API* of *Shared Manager*, let's get down to implementing its internal logic.
 
@@ -128,7 +128,7 @@ The lifetime of an instance of `Borrowing` matches that of the operation, so it'
 The described behavior can be implemented using existing *OS* synchronization constructs – [conditions](https://developer.apple.com/documentation/foundation/nscondition). The code of the `Borrowing` class below fulfills such blocking. The `wait()` method contains the blocking part through which the threads enter the sleeping state and wait until the `isRevoked` flag is set. The unblocking part is in the `revoke()` method, and this is where the `isRevoked` flag is set. The `isRevoked` flag is accompanied by a special synchronization construct – the [condition variable](https://developer.apple.com/documentation/foundation/nscondition). The `Borrowing` instances have a single-use lifecycle.
 
 ![](../images/2020-05-27-swift-mutex-to-operation-strategy/code04.png){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/2fd29ac4319c5f02e70af390b6a73fd6" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/2fd29ac4319c5f02e70af390b6a73fd6" target="_blank">Click for Gist</a></p>
 
 The `Registry` class is used for bookkeeping of all current borrowings and always reflects the current state of *Shared Manager*. An important aspect of its implementation is that any change in its state also causes a change of its *idenity*, which prevents [ABA problem](https://en.wikipedia.org/wiki/ABA_problem) in handling *Shared Manager* state in a concurrent environment. Therefore, the *API* of `Registry` uses methods such as `copyWithAdded()` and `copyWithRemoved()` to assure this.
 
@@ -136,7 +136,7 @@ The `searchForConflictingBorrowingWith()` method searches for an active conflict
 
 ![](../images/2020-05-27-swift-mutex-to-operation-strategy/code05.png){: height="100%" width="100%" }
 
-<p align="center"><a href="https://gist.github.com/SergeBouts/1c4323c2bbc5ae754b9bd4c4b5269b59" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/1c4323c2bbc5ae754b9bd4c4b5269b59" target="_blank">Click for Gist</a></p>
 
 *Shared Manager*, implemented in the `SharedManager` class of the same name (see the below code), is the glue and at the same time the facade for all parties involved. Its *API* is a single `internalBorrow()` method which incorporates all the logic of our synchronization construct and occurs in 3 phases: 
 
@@ -149,7 +149,7 @@ The method `activateBorrowingFor()` is quite complex, because it is responsible 
 Last but not the least, in the `defer` section in the method `internalBorrow()` (lines 7-8), in addition to and after deactivating the created *borrowing*, its revocation is necessarily performed to unblock the waiting threads, if any.
 
 ![](../images/2020-05-27-swift-mutex-to-operation-strategy/code06.png){: height="100%" width="100%" }
-<p align="center"><a href="https://gist.github.com/SergeBouts/6bf8eb8036824542ffad9920daa9325b" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/6bf8eb8036824542ffad9920daa9325b" target="_blank">Click for Gist</a></p>
 
 
 
@@ -159,7 +159,7 @@ Finally, let's see how we can apply the synchronization construct we developed f
 
 <img src="../images/2020-05-27-swift-mutex-to-operation-strategy/TrafficAccountClass-final.png" width="100%" height="100%" alt="TrafficAccountClass">
 
-<p align="center"><a href="https://gist.github.com/SergeBouts/e650dce7010aa0e52e5fc4d99e19ab29" target="_blank">Click for Gist</a></p>
+<p align="center"><a href="https://gist.github.com/serhiybutz/e650dce7010aa0e52e5fc4d99e19ab29" target="_blank">Click for Gist</a></p>
 
 In fact, the code structure has not changed at all. Now the *properties* of `balance` and `traffic` are wrapped in the `Property` class (lines 4-5). We added the `sharedManager` property for the `SharedManager` instance (line 7). And we put the body of each operation in the access block of Shared Manager's `borrow()` method argument, which follows the arguments of the *properties* used. Notice, how we refer to the *property* values inside the access block – they translate into closure's arguments as accessors (`Accessor` struct instances), and we always use the `value` property of the accessor.
 
@@ -169,7 +169,7 @@ In fact, the code structure has not changed at all. Now the *properties* of `bal
 
 In this article, we saw that working with memory in multi-threaded programs is hard and that access to shared memory needs to be synchronized. Next, we saw that *mutex* is a universal synchronization mechanism, and we reviewed the predominant methodology for working with *mutexes*, which is to associate a particular *mutex* with a particular memory region(s). We referred to it as *mutex-to-memory strategy*. Next, using the example of a traffic accounting class, we saw how this methodology can be unoptimal and further we discussed how we can do better with an approach of associating a specific *mutex* with a specific operation, which we named *mutex-to-operation strategy*. Next, we developed a custom synchronization construct for *mutex-to-operation strategy* and applied it to our original traffic accounting example.
 
-In fact, there is still room for improvement in our synchronization construct, such as a more optimal handling of the properties of a program by separating accesses by their type: read-only or read-write, but this is not covered in this post. If you are interested in the finished implementation, it is available in this [repository](https://github.com/SergeBouts/Mitra/releases/tag/0.1.0).
+In fact, there is still room for improvement in our synchronization construct, such as a more optimal handling of the properties of a program by separating accesses by their type: read-only or read-write, but this is not covered in this post. If you are interested in the finished implementation, it is available in this [repository](https://github.com/serhiybutz/Mitra/releases/tag/0.1.0).
 
 Thank you for reading 🎈
 
